@@ -353,15 +353,15 @@ if (!finished) {
       finished ? (
         <div class="flex flex-col items-center justify-center h-full w-full bg-slate-50">
           <div class="max-w-md text-center space-y-6">
-            <h1 class="text-3xl font-bold text-slate-900">All Done</h1>
+            <h1 class="text-3xl font-bold text-slate-900">Hoàn thành!</h1>
             <p class="text-slate-500">
-              You've successfully reviewed the entire dataset.
+              Bạn đã kiểm tra xong toàn bộ dữ liệu.
             </p>
             <button
               onclick="window.location.reload()"
               class="px-6 py-2 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 transition-colors"
             >
-              Check Again
+              Kiểm tra lại
             </button>
           </div>
         </div>
@@ -485,7 +485,7 @@ if (!finished) {
             <div class="flex-none p-4 bg-zinc-900 border-t border-white/5 z-10">
                  <div class="w-full">
                   <div class="flex justify-between items-end mb-1">
-                      <span class="text-xs uppercase tracking-wider font-bold text-zinc-400">Progress</span>
+                      <span class="text-xs uppercase tracking-wider font-bold text-zinc-400">Tiến độ</span>
                       <div class="flex items-center gap-2">
                           <span class="text-sm font-bold text-white/90">{checkedCount} / {totalCount}</span>
                           <span class="text-xs text-zinc-500">({totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0}%)</span>
@@ -506,10 +506,10 @@ if (!finished) {
             <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-100 z-20">
               <div class="flex items-baseline space-x-3">
                 <h2 class="font-semibold text-slate-900 text-lg">
-                  Review Item
+                  Kiểm tra dữ liệu
                 </h2>
                 <span class="text-xs text-slate-400 uppercase tracking-widest font-medium">
-                  Data Validation
+                  C=Có, K=Không, S=Bỏ qua
                 </span>
               </div>
             </div>
@@ -593,24 +593,27 @@ if (!finished) {
               <div class="space-y-8">
                 
                 {/* 1. Page Type */}
-                <div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 transition-all" id="q-page-type">
+                <div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100 transition-all question-block" id="q-page-type" data-next="q-has-text">
                     <div class="flex flex-col gap-3">
-                        <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide">
-                            1. Is this <span class="text-indigo-600">"{dataRow.page_type.replace('_', ' ')}"</span> page?
-                        </h3>
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide">
+                                1. Đây có phải trang <span class="text-indigo-600">"{dataRow.page_type.replace('_', ' ')}"</span> không?
+                            </h3>
+                            <button type="button" class="skip-btn text-xs text-slate-400 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50" onclick="skipQuestion('q-page-type', 'q-has-text')">Bỏ qua →</button>
+                        </div>
                         <div class="flex items-center gap-4">
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-indigo-100 hover:border-indigo-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_page_type" value="yes" class="text-indigo-600 focus:ring-offset-0 focus:ring-0" checked onclick="toggleSection('edit-page-type', false); revealNext('q-has-text')" />
-                                <span class="text-sm font-medium text-slate-700">Yes</span>
+                                <span class="text-sm font-medium text-slate-700">Có</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-rose-100 hover:border-rose-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_page_type" value="no" class="text-rose-500 focus:ring-offset-0 focus:ring-0" onclick="toggleSection('edit-page-type', true); revealNext('q-has-text')" />
-                                <span class="text-sm font-medium text-slate-700">No</span>
+                                <span class="text-sm font-medium text-slate-700">Không</span>
                             </label>
                         </div>
                         
                         <div id="edit-page-type" class="hidden mt-2 p-3 bg-white rounded-lg border border-indigo-100 animate-fade-in">
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Select correct Page Type:</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Chọn loại trang đúng:</label>
                              <select name="page_type" class="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5">
                                 {PAGE_TYPES.map(t => (
                                     <option value={t} selected={dataRow.page_type === t}>{t.replace('_', ' ')}</option>
@@ -621,84 +624,93 @@ if (!finished) {
                 </div>
 
                 {/* 2. Has Text */}
-                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 transition-all opacity-50 pointer-events-none" id="q-has-text">
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 transition-all opacity-50 pointer-events-none question-block" id="q-has-text" data-next="q-has-table">
                      <div class="flex flex-col gap-3">
-                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">
-                            2. This page has <span class="text-indigo-600">{dataRow.has_text ? 'TEXT' : 'NO TEXT'}</span>?
-                        </h3>
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                                2. Trang này có <span class="text-indigo-600">{dataRow.has_text ? 'CHỮ' : 'KHÔNG CÓ CHỮ'}</span>?
+                            </h3>
+                            <button type="button" class="skip-btn text-xs text-slate-400 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50" onclick="skipQuestion('q-has-text', 'q-has-table')">Bỏ qua →</button>
+                        </div>
                         <div class="flex items-center gap-4">
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_has_text" value="yes" class="text-indigo-600 focus:ring-offset-0 focus:ring-0" checked onclick="toggleSection('edit-has-text', false); revealNext('q-has-table')" />
-                                <span class="text-sm font-medium text-slate-700">Yes</span>
+                                <span class="text-sm font-medium text-slate-700">Có</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-rose-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_has_text" value="no" class="text-rose-500 focus:ring-offset-0 focus:ring-0" onclick="toggleSection('edit-has-text', true); revealNext('q-has-table')" />
-                                <span class="text-sm font-medium text-slate-700">No</span>
+                                <span class="text-sm font-medium text-slate-700">Không</span>
                             </label>
                         </div>
 
                          <div id="edit-has-text" class="hidden mt-2 p-3 bg-white rounded-lg border border-slate-200 animate-fade-in">
-                             <label class="block text-xs font-bold text-slate-500 mb-1">Override Has Text:</label>
+                             <label class="block text-xs font-bold text-slate-500 mb-1">Chọn lại:</label>
                              <select name="has_text" class="w-full border text-sm rounded-lg block p-2.5 bg-slate-50 border-slate-300 text-slate-900">
-                                 <option value="true" selected={dataRow.has_text}>Yes (one or more)</option>
-                                 <option value="false" selected={!dataRow.has_text}>No</option>
+                                 <option value="true" selected={dataRow.has_text}>Có chữ</option>
+                                 <option value="false" selected={!dataRow.has_text}>Không có chữ</option>
                             </select>
                          </div>
                      </div>
                 </div>
 
                 {/* 3. Has Table */}
-                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 transition-all opacity-50 pointer-events-none" id="q-has-table">
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 transition-all opacity-50 pointer-events-none question-block" id="q-has-table" data-next="q-objects">
                      <div class="flex flex-col gap-3">
-                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">
-                            3. This page has <span class="text-indigo-600">{dataRow.has_table ? 'TABLE' : 'NO TABLE'}</span>?
-                        </h3>
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                                3. Trang này có <span class="text-indigo-600">{dataRow.has_table ? 'BẢNG' : 'KHÔNG CÓ BẢNG'}</span>?
+                            </h3>
+                            <button type="button" class="skip-btn text-xs text-slate-400 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50" onclick="skipQuestion('q-has-table', 'q-objects')">Bỏ qua →</button>
+                        </div>
                          <div class="flex items-center gap-4">
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_has_table" value="yes" class="text-indigo-600 focus:ring-offset-0 focus:ring-0" checked onclick="toggleSection('edit-has-table', false); revealNext('q-objects')" />
-                                <span class="text-sm font-medium text-slate-700">Yes</span>
+                                <span class="text-sm font-medium text-slate-700">Có</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-rose-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_has_table" value="no" class="text-rose-500 focus:ring-offset-0 focus:ring-0" onclick="toggleSection('edit-has-table', true); revealNext('q-objects')" />
-                                <span class="text-sm font-medium text-slate-700">No</span>
+                                <span class="text-sm font-medium text-slate-700">Không</span>
                             </label>
                         </div>
                         <div id="edit-has-table" class="hidden mt-2 p-3 bg-white rounded-lg border border-slate-200 animate-fade-in">
-                             <label class="block text-xs font-bold text-slate-500 mb-1">Override Has Table:</label>
+                             <label class="block text-xs font-bold text-slate-500 mb-1">Chọn lại:</label>
                              <select name="has_table" class="w-full border text-sm rounded-lg block p-2.5 bg-slate-50 border-slate-300 text-slate-900">
-                                 <option value="true" selected={dataRow.has_table}>Yes (one or more)</option>
-                                 <option value="false" selected={!dataRow.has_table}>No</option>
+                                 <option value="true" selected={dataRow.has_table}>Có bảng</option>
+                                 <option value="false" selected={!dataRow.has_table}>Không có bảng</option>
                             </select>
                          </div>
                      </div>
                 </div>
 
                 {/* 4. Objects Present */}
-                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 transition-all opacity-50 pointer-events-none" id="q-objects">
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 transition-all opacity-50 pointer-events-none question-block" id="q-objects" data-next="q-verify">
                    <div class="flex flex-col gap-3">
-                       <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">
-                           4. The following objects are present?
-                       </h3>
+                       <div class="flex justify-between items-start">
+                           <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                               4. Các đối tượng sau có xuất hiện?
+                           </h3>
+                           <button type="button" class="skip-btn text-xs text-slate-400 hover:text-indigo-600 px-2 py-1 rounded hover:bg-indigo-50" onclick="skipQuestion('q-objects', 'q-verify')">Bỏ qua →</button>
+                       </div>
                        <div class="flex flex-wrap gap-2 text-xs font-medium text-slate-600 bg-white p-3 rounded-lg border border-slate-200">
                             {dataRow.objects_present && dataRow.objects_present.length > 0 ? (
                                 dataRow.objects_present.map((obj: string) => (<span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded border border-indigo-100">{obj.replace('_',' ')}</span>))
-                            ) : "No objects listed"}
+                            ) : "Không có đối tượng"}
                        </div>
                        
                         <div class="flex items-center gap-4">
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_objects" value="yes" class="text-indigo-600 focus:ring-offset-0 focus:ring-0" checked onclick="toggleSection('edit-objects', false); revealNext('q-verify')" />
-                                <span class="text-sm font-medium text-slate-700">Yes</span>
+                                <span class="text-sm font-medium text-slate-700">Có</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-rose-300 transition-colors shadow-sm">
                                 <input type="radio" name="q_objects" value="no" class="text-rose-500 focus:ring-offset-0 focus:ring-0" onclick="toggleSection('edit-objects', true); revealNext('q-verify')" />
-                                <span class="text-sm font-medium text-slate-700">No</span>
+                                <span class="text-sm font-medium text-slate-700">Không</span>
                             </label>
                         </div>
                    </div>
 
                    <div id="edit-objects" class="hidden mt-4 pt-4 border-t border-slate-200">
-                       <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Check Actual Objects:</label>
+                       <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Chọn đối tượng thực tế:</label>
                        <div class="grid grid-cols-2 gap-y-2 gap-x-4 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                            {OBJECTS_PRESENT_ENUM.map((obj: string) => (
                                <label class="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-white rounded transition-colors duration-150">
@@ -713,19 +725,19 @@ if (!finished) {
                 {/* 5. Detailed Verification */}
                 <div class="space-y-6 pt-6 border-t border-slate-100 opacity-50 pointer-events-none transition-all" id="q-verify">
                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">
-                        Content Verification
+                        Kiểm tra nội dung
                     </h3>
                     
                     {/* Common Questions */}
                     <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
-                        <h4 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Common Checks</h4>
+                        <h4 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Kiểm tra chung</h4>
                         
                         {/* Question 5.1 */}
                         <div>
                              <p class="text-sm text-slate-700 mb-2">Trang này có bị đánh sai tên không?</p>
                              <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_1" value="no" checked onclick="toggleSection('err-q-v-1', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_1" value="yes" onclick="toggleSection('err-q-v-1', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_1" value="no" checked onclick="toggleSection('err-q-v-1', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_1" value="yes" onclick="toggleSection('err-q-v-1', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-1" class="hidden mt-2 ml-4 space-y-2 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="ID_ISSUE" checked={dataRow.error_tags?.includes("ID_ISSUE")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">ID Issue</span></label>
@@ -736,8 +748,8 @@ if (!finished) {
                         <div>
                              <p class="text-sm text-slate-700 mb-2">Có suy luận đạo đức / giáo dục không?</p>
                              <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_2" value="no" checked onclick="toggleSection('err-q-v-2', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_2" value="yes" onclick="toggleSection('err-q-v-2', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_2" value="no" checked onclick="toggleSection('err-q-v-2', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_2" value="yes" onclick="toggleSection('err-q-v-2', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-2" class="hidden mt-2 ml-4 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="SUBJECTIVE_REASONING" checked={dataRow.error_tags?.includes("SUBJECTIVE_REASONING")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Subjective Reasoning</span></label>
@@ -747,8 +759,8 @@ if (!finished) {
                          <div>
                              <p class="text-sm text-slate-700 mb-2">Có chi tiết bịa đặt không có trong ảnh không?</p>
                              <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_3" value="no" checked onclick="toggleSection('err-q-v-3', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_3" value="yes" onclick="toggleSection('err-q-v-3', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_3" value="no" checked onclick="toggleSection('err-q-v-3', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_3" value="yes" onclick="toggleSection('err-q-v-3', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-3" class="hidden mt-2 ml-4 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="HALLUCINATION" checked={dataRow.error_tags?.includes("HALLUCINATION")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Hallucination</span></label>
@@ -758,8 +770,8 @@ if (!finished) {
                          <div>
                              <p class="text-sm text-slate-700 mb-2">Thứ tự có không hợp lý hay nhảy ý khó nghe không?</p>
                              <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_4" value="no" checked onclick="toggleSection('err-q-v-4', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_4" value="yes" onclick="toggleSection('err-q-v-4', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_4" value="no" checked onclick="toggleSection('err-q-v-4', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_4" value="yes" onclick="toggleSection('err-q-v-4', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-4" class="hidden mt-2 ml-4 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="DETAIL_INCOHERENT_FLOW" checked={dataRow.error_tags?.includes("DETAIL_INCOHERENT_FLOW")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Incoherent Flow</span></label>
@@ -775,8 +787,8 @@ if (!finished) {
                          <div>
                              <p class="text-sm text-slate-700 mb-2">Caption short có nằm ngoài 1-2 câu hay mô tả không đúng loại trang không?</p>
                               <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_5" value="no" checked onclick="toggleSection('err-q-v-5', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_5" value="yes" onclick="toggleSection('err-q-v-5', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_5" value="no" checked onclick="toggleSection('err-q-v-5', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_5" value="yes" onclick="toggleSection('err-q-v-5', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-5" class="hidden mt-2 ml-4 space-y-2 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="TOO_LONG_SHORT" checked={dataRow.error_tags?.includes("TOO_LONG_SHORT")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Too Long/Short</span></label>
@@ -788,8 +800,8 @@ if (!finished) {
                          <div>
                              <p class="text-sm text-slate-700 mb-2">Có dán OCR dài hay liệt kê quá chi tiết không?</p>
                               <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_6" value="no" checked onclick="toggleSection('err-q-v-6', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_6" value="yes" onclick="toggleSection('err-q-v-6', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_6" value="no" checked onclick="toggleSection('err-q-v-6', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_6" value="yes" onclick="toggleSection('err-q-v-6', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-6" class="hidden mt-2 ml-4 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="TOO_LONG_SHORT" checked={dataRow.error_tags?.includes("TOO_LONG_SHORT")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Too Detailed/OCR Dump</span></label>
@@ -805,8 +817,8 @@ if (!finished) {
                          <div>
                              <p class="text-sm text-slate-700 mb-2">Tổng quan trang có đi sau chi tiết không?</p>
                              <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_7" value="no" checked onclick="toggleSection('err-q-v-7', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_7" value="yes" onclick="toggleSection('err-q-v-7', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_7" value="no" checked onclick="toggleSection('err-q-v-7', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_7" value="yes" onclick="toggleSection('err-q-v-7', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-7" class="hidden mt-2 ml-4 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="WRONG_LAYOUT" checked={dataRow.error_tags?.includes("WRONG_LAYOUT")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Wrong Layout (Overview Last)</span></label>
@@ -817,8 +829,8 @@ if (!finished) {
                          <div>
                              <p class="text-sm text-slate-700 mb-2">Chữ trong ảnh minh họa có dẫn sai ngữ cảnh hoặc trái nguyên văn không?</p>
                              <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_8" value="no" checked onclick="toggleSection('err-q-v-8', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_8" value="yes" onclick="toggleSection('err-q-v-8', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_8" value="no" checked onclick="toggleSection('err-q-v-8', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_8" value="yes" onclick="toggleSection('err-q-v-8', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-8" class="hidden mt-2 ml-4 grid grid-cols-2 gap-2 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="MISQUOTED_TEXT" checked={dataRow.error_tags?.includes("MISQUOTED_TEXT")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Misquoted</span></label>
@@ -833,8 +845,8 @@ if (!finished) {
                          <div>
                              <p class="text-sm text-slate-700 mb-2">Thuyết minh có sai luồng_đọc(trên -> dưới, trái phải) hay làm người nghe không định vị được vị trí thuộc phần nào không?</p>
                              <div class="flex gap-4">
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_9" value="no" checked onclick="toggleSection('err-q-v-9', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> No</label>
-                               <label class="radio-btn gap-2"><input type="radio" name="q_v_9" value="yes" onclick="toggleSection('err-q-v-9', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Yes</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_9" value="no" checked onclick="toggleSection('err-q-v-9', false); checkChangeLog()" class="text-indigo-600 focus:ring-0"/> Không</label>
+                               <label class="radio-btn gap-2"><input type="radio" name="q_v_9" value="yes" onclick="toggleSection('err-q-v-9', true); checkChangeLog()" class="text-rose-500 focus:ring-0"/> Có</label>
                              </div>
                              <div id="err-q-v-9" class="hidden mt-2 ml-4 space-y-2 border-l-2 border-rose-200 pl-3">
                                  <label class="flex items-center gap-2"><input type="checkbox" name="error_tags" value="WRONG_LAYOUT" checked={dataRow.error_tags?.includes("WRONG_LAYOUT")} class="text-rose-500 rounded border-slate-300" onchange="checkChangeLog()"/> <span class="text-xs">Wrong Layout/Flow</span></label>
@@ -847,15 +859,15 @@ if (!finished) {
                 {/* Final Check Display / Manual Override */}
                 <div class="bg-rose-50 p-4 rounded-xl border border-rose-100">
                     <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-xs font-bold text-rose-800 uppercase">Verification Issues (Manual Override)</h4>
-                         <button type="button" onclick="document.getElementById('manual-error-tags').classList.toggle('hidden')" class="text-xs text-rose-600 hover:text-rose-800 underline">Show All Tags</button>
+                        <h4 class="text-xs font-bold text-rose-800 uppercase">Lỗi phát hiện (Chỉnh sửa thủ công)</h4>
+                         <button type="button" onclick="document.getElementById('manual-error-tags').classList.toggle('hidden')" class="text-xs text-rose-600 hover:text-rose-800 underline">Hiển tất cả tag</button>
                     </div>
                      <div class="flex flex-wrap gap-2 mb-2" id="error-tags-display">
                         {/* Summary of checked tags (for display) */}
                         {dataRow.error_tags?.map((t) => (
                             <span class="px-2 py-1 bg-rose-100 text-rose-700 rounded text-xs border border-rose-200 font-mono">{t}</span>
                         ))}
-                         {!dataRow.error_tags?.length && <span class="text-xs text-rose-400 italic">No issues flagged</span>}
+                         {!dataRow.error_tags?.length && <span class="text-xs text-rose-400 italic">Không có lỗi</span>}
                      </div>
 
                     <div id="manual-error-tags" class="hidden mt-3 pt-3 border-t border-rose-200 grid grid-cols-2 gap-2">
@@ -880,21 +892,21 @@ if (!finished) {
               {/* Requirement 6: Auto Flags Verification */}
                <div class="space-y-4 pt-6 border-t border-slate-100">
                   <div class="bg-amber-50 rounded-xl border border-amber-200 p-4">
-                      <h4 class="text-sm font-bold text-amber-800 border-b border-amber-100 pb-2 mb-3 tracking-wide uppercase">Auto-Detected Flags</h4>
+                      <h4 class="text-sm font-bold text-amber-800 border-b border-amber-100 pb-2 mb-3 tracking-wide uppercase">Cờ tự động phát hiện</h4>
                       
                       <div class="mb-4 text-xs font-mono text-amber-900 bg-white/50 p-2 rounded">
-                          {dataRow.auto_flags && dataRow.auto_flags.length > 0 ? dataRow.auto_flags.join(', ') : "None"}
+                          {dataRow.auto_flags && dataRow.auto_flags.length > 0 ? dataRow.auto_flags.join(', ') : "Không có"}
                       </div>
 
                        <div>
-                           <p class="text-sm text-slate-700 mb-2 font-medium">Are these auto-detected flags correct?</p>
+                           <p class="text-sm text-slate-700 mb-2 font-medium">Các cờ tự động này có đúng không?</p>
                            <div class="flex gap-4 mb-3">
-                                <label class="radio-btn gap-2"><input type="radio" name="q_auto_flags" value="yes" checked onclick="toggleSection('edit-auto-flags', false)" class="text-indigo-600 focus:ring-0"/> Yes</label>
-                                <label class="radio-btn gap-2"><input type="radio" name="q_auto_flags" value="no" onclick="toggleSection('edit-auto-flags', true)" class="text-rose-500 focus:ring-0"/> No (Edit)</label>
+                                <label class="radio-btn gap-2"><input type="radio" name="q_auto_flags" value="yes" checked onclick="toggleSection('edit-auto-flags', false)" class="text-indigo-600 focus:ring-0"/> Có</label>
+                                <label class="radio-btn gap-2"><input type="radio" name="q_auto_flags" value="no" onclick="toggleSection('edit-auto-flags', true)" class="text-rose-500 focus:ring-0"/> Không (Sửa)</label>
                            </div>
                            
                            <div id="edit-auto-flags" class="hidden mt-2 p-3 bg-white rounded-lg border border-amber-200">
-                               <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Select Actual Flags:</label>
+                               <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Chọn cờ thực tế:</label>
                                 <div class="grid grid-cols-2 gap-2">
                                    {AUTO_FLAGS.map((msg) => (
                                      <label class="flex items-center space-x-2 cursor-pointer">
@@ -918,22 +930,22 @@ if (!finished) {
               {/* Notes & Changelog */}
               <div class="space-y-4 pt-6 border-t border-slate-100">
                   <div>
-                      <h4 class="text-sm font-bold text-slate-800 mb-2">Is this note accurate?</h4>
+                      <h4 class="text-sm font-bold text-slate-800 mb-2">Ghi chú này có chính xác không?</h4>
                       <div class="flex items-center gap-4 mb-2">
-                           <button type="button" onclick="document.getElementById('notes-edit-area').classList.remove('hidden'); document.getElementById('changelog_container').classList.remove('hidden');" class="px-3 py-1.5 text-xs bg-white border border-slate-200 text-slate-600 rounded hover:border-amber-400 hover:text-amber-600">No, edit note</button>
+                           <button type="button" onclick="document.getElementById('notes-edit-area').classList.remove('hidden'); document.getElementById('changelog_container').classList.remove('hidden');" class="px-3 py-1.5 text-xs bg-white border border-slate-200 text-slate-600 rounded hover:border-amber-400 hover:text-amber-600">Không, sửa ghi chú</button>
                            {dataRow.notes ? (
                                <p class="text-sm text-slate-600 italic">"{dataRow.notes}"</p>
                            ) : (
-                               <p class="text-sm text-slate-400 italic">No notes</p>
+                               <p class="text-sm text-slate-400 italic">Không có ghi chú</p>
                            )}
                       </div>
                       <div id="notes-edit-area" class="hidden animate-fade-in">
-                          <textarea name="notes" rows="2" class="w-full text-sm border-amber-200 rounded-lg p-2.5 focus:ring-amber-500 focus:border-amber-500 bg-amber-50" placeholder="Enter correct notes..." oninput="document.getElementById('changelog_container').classList.remove('hidden')">{dataRow.notes || ""}</textarea>
+                          <textarea name="notes" rows="2" class="w-full text-sm border-amber-200 rounded-lg p-2.5 focus:ring-amber-500 focus:border-amber-500 bg-amber-50" placeholder="Nhập ghi chú..." oninput="document.getElementById('changelog_container').classList.remove('hidden')">{dataRow.notes || ""}</textarea>
                       </div>
                   </div>
                    <div id="changelog_container" class="hidden animate-fade-in">
-                      <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Change Log</label>
-                      <input type="text" name="change_log" class="w-full text-sm border-indigo-200 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/50" placeholder="Explain what changed..." />
+                      <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nhật ký thay đổi</label>
+                      <input type="text" name="change_log" class="w-full text-sm border-indigo-200 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/50" placeholder="Giải thích đã thay đổi gì..." />
                   </div>
               </div>
 
@@ -944,14 +956,14 @@ if (!finished) {
                   disabled={isSaved}
                   class={`flex-1 flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white transition-all ${isSaved ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 >
-                  {isSaved ? 'Saved!' : 'Save (Update Row)'}
+                  {isSaved ? 'Đã lưu!' : 'Lưu (Ctrl+S)'}
                 </button>
                  <a
                   href="/"
                   id="continue-btn"
                   class={`flex-1 flex justify-center items-center py-3.5 px-4 border border-indigo-200 bg-white text-indigo-700 rounded-xl shadow-sm text-sm font-bold transition-all ${isSaved ? 'hover:bg-indigo-50' : 'pointer-events-none opacity-50'}`}
                 >
-                  Continue (Next Random)
+                  Tiếp tục (Enter)
                 </a>
               </div>
             </form>
@@ -959,12 +971,12 @@ if (!finished) {
         </div>
       ) : (
         <div class="flex items-center justify-center flex-col h-full text-slate-400 text-sm space-y-4">
-          <p>No more items found for these filters.</p>
+          <p>Không còn mục nào cho bộ lọc này.</p>
           <button
             onclick="document.cookie='dataset_filter=; Max-Age=0; path=/'; window.location.reload()"
             class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors"
           >
-            Clear Filters & Try Again
+            Xóa bộ lọc & Thử lại
           </button>
         </div>
       )
@@ -986,6 +998,96 @@ if (!finished) {
           if(!el) return;
           el.classList.remove('opacity-50', 'pointer-events-none');
       }
+
+      // Skip question function
+      function skipQuestion(currentId, nextId) {
+          revealNext(nextId);
+          const nextEl = document.getElementById(nextId);
+          if (nextEl) {
+              nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+      }
+
+      // Get current active question
+      function getCurrentQuestion() {
+          const questions = document.querySelectorAll('.question-block');
+          for (const q of questions) {
+              if (!q.classList.contains('opacity-50') && !q.classList.contains('pointer-events-none')) {
+                  const rect = q.getBoundingClientRect();
+                  if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
+                      return q;
+                  }
+              }
+          }
+          // Return first non-disabled question
+          for (const q of questions) {
+              if (!q.classList.contains('opacity-50')) {
+                  return q;
+              }
+          }
+          return null;
+      }
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+          // Skip if user is typing in input/textarea
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+              // Allow Ctrl+S for save
+              if (e.ctrlKey && e.key === 's') {
+                  e.preventDefault();
+                  const saveBtn = document.getElementById('save-btn');
+                  if (saveBtn && !saveBtn.disabled) saveBtn.click();
+              }
+              return;
+          }
+
+          const currentQ = getCurrentQuestion();
+          
+          // C = Có (Yes)
+          if (e.key === 'c' || e.key === 'C') {
+              if (currentQ) {
+                  const yesRadio = currentQ.querySelector('input[type="radio"][value="yes"]');
+                  if (yesRadio) {
+                      yesRadio.click();
+                      yesRadio.focus();
+                  }
+              }
+          }
+          
+          // K = Không (No)
+          if (e.key === 'k' || e.key === 'K') {
+              if (currentQ) {
+                  const noRadio = currentQ.querySelector('input[type="radio"][value="no"]');
+                  if (noRadio) {
+                      noRadio.click();
+                      noRadio.focus();
+                  }
+              }
+          }
+          
+          // S = Skip
+          if (e.key === 's' || e.key === 'S') {
+              if (currentQ) {
+                  const skipBtn = currentQ.querySelector('.skip-btn');
+                  if (skipBtn) skipBtn.click();
+              }
+          }
+
+          // Ctrl+S = Save
+          if (e.ctrlKey && e.key === 's') {
+              e.preventDefault();
+              const saveBtn = document.getElementById('save-btn');
+              if (saveBtn && !saveBtn.disabled) saveBtn.click();
+          }
+
+          // Enter = Continue (if saved)
+          if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+              const continueBtn = document.getElementById('continue-btn');
+              if (continueBtn && !continueBtn.classList.contains('pointer-events-none')) {
+                  window.location.href = continueBtn.href;
+              }
+          }
+      });
 
       function toggleEditCaption(inputId, btnId) {
           const input = document.getElementById(inputId);
