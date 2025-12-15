@@ -319,6 +319,31 @@ if (!finished) {
       .font-mono {
         font-family: 'Liberation Mono', 'Courier New', monospace;
       }
+      /* Resize handles */
+      .resize-handle-h {
+        width: 8px;
+        cursor: col-resize;
+        background-color: #3f3f46;
+        transition: background-color 0.15s;
+        flex-shrink: 0;
+      }
+      .resize-handle-h:hover, .resize-handle-h.active {
+        background-color: #6366f1;
+      }
+      .resize-handle-v {
+        height: 8px;
+        cursor: row-resize;
+        background-color: #e2e8f0;
+        transition: background-color 0.15s;
+        flex-shrink: 0;
+      }
+      .resize-handle-v:hover, .resize-handle-v.active {
+        background-color: #6366f1;
+      }
+      .no-select {
+        user-select: none;
+        -webkit-user-select: none;
+      }
     </style>
   </head>
   <body
@@ -341,9 +366,9 @@ if (!finished) {
           </div>
         </div>
       ) : dataRow ? (
-        <div class="flex h-full">
-          {/* Left: Image (5/12) */}
-          <div class="w-5/12 bg-zinc-900 flex flex-col relative">
+        <div class="flex h-full" id="main-container">
+          {/* Left: Image */}
+          <div id="left-panel" class="bg-zinc-900 flex flex-col relative" style="width: 41.67%; min-width: 250px;">
             {/* Header / Progress / Search */}
             <div class="flex-none p-4 flex flex-col gap-4 bg-zinc-900 border-b border-white/5 shadow-2xl z-10">
               <div class="flex justify-between items-center">
@@ -473,8 +498,11 @@ if (!finished) {
             </div>
           </div>
 
-          {/* Right: Form (7/12) */}
-          <div class="w-7/12 bg-slate-50 border-l border-slate-200 flex flex-col relative">
+          {/* Horizontal Resize Handle */}
+          <div id="resize-handle-h" class="resize-handle-h"></div>
+
+          {/* Right: Form */}
+          <div id="right-panel" class="bg-slate-50 border-l border-slate-200 flex flex-col relative" style="flex: 1; min-width: 400px;">
             <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-100 z-20">
               <div class="flex items-baseline space-x-3">
                 <h2 class="font-semibold text-slate-900 text-lg">
@@ -506,9 +534,9 @@ if (!finished) {
             )}
 
             {/* Captions Fixed Top (Req 6 & 7 & 8) */}
-            <div class="shrink-0 bg-slate-100 border-b border-slate-200 p-6 shadow-md z-30 max-h-[40vh] overflow-y-auto custom-scrollbar">
+            <div id="caption-panel" class="shrink-0 bg-slate-100 border-b border-slate-200 p-6 shadow-md z-30 flex flex-col" style="height: 35%; min-height: 120px; max-height: 70%;">
                {/* Caption Short */}
-                 <div class="group mb-4">
+                 <div class="group mb-4 shrink-0">
                    <div class="flex justify-between items-baseline mb-2">
                         <label class="text-xs font-bold text-slate-600 uppercase tracking-widest border-l-2 border-indigo-500 pl-2">Caption Short</label>
                         <button type="button" id="btn-edit-caption-short" class="px-2 py-1 text-xs bg-white text-slate-500 border border-slate-300 rounded-full hover:bg-indigo-500 hover:text-white transition-all opacity-70 group-hover:opacity-100 flex items-center gap-1" onclick="toggleEditCaption('caption_short_input', 'btn-edit-caption-short')">
@@ -530,8 +558,8 @@ if (!finished) {
                  </div>
                  
                  {/* Caption Detail */}
-                 <div class="group">
-                    <div class="flex justify-between items-baseline mb-2">
+                 <div class="group flex-1 flex flex-col min-h-0">
+                    <div class="flex justify-between items-baseline mb-2 shrink-0">
                         <label class="text-xs font-bold text-slate-600 uppercase tracking-widest border-l-2 border-indigo-500 pl-2">Caption Detail</label>
                         <button type="button" id="btn-edit-caption-detail" class="px-2 py-1 text-xs bg-white text-slate-500 border border-slate-300 rounded-full hover:bg-indigo-500 hover:text-white transition-all opacity-70 group-hover:opacity-100 flex items-center gap-1" onclick="toggleEditCaption('caption_detail_input', 'btn-edit-caption-detail')">
                             <span class="btn-text">Edit</span>
@@ -541,9 +569,8 @@ if (!finished) {
                      id="caption_detail_input"
                      name="caption_detail"
                      form="main-form"
-                     rows="4" 
                      readonly
-                     class="w-full bg-slate-50 border border-slate-300 rounded-md text-base leading-loose font-medium text-slate-900 placeholder-slate-400 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none p-3 read-only:bg-transparent read-only:border-0 read-only:border-b read-only:border-slate-300 read-only:rounded-none read-only:px-0 read-only:cursor-text"
+                     class="w-full flex-1 bg-slate-50 border border-slate-300 rounded-md text-base leading-loose font-medium text-slate-900 placeholder-slate-400 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none p-3 read-only:bg-transparent read-only:border-0 read-only:border-b read-only:border-slate-300 read-only:rounded-none read-only:px-0 read-only:cursor-text overflow-y-auto"
                      placeholder="No detail caption..."
                       oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; document.getElementById('changelog_container').classList.remove('hidden')"
                       onfocus="this.classList.remove('read-only:border-slate-300');"
@@ -551,6 +578,9 @@ if (!finished) {
                    >{dataRow.caption_detail || ""}</textarea>
                  </div>
             </div>
+
+            {/* Vertical Resize Handle */}
+            <div id="resize-handle-v" class="resize-handle-v"></div>
 
             <form
               id="main-form"
@@ -1155,6 +1185,111 @@ if (!finished) {
             window.location.href = url.toString();
         });
       }
+
+      // --- Resizable Panels Logic ---
+      (function initResizablePanels() {
+        const mainContainer = document.getElementById('main-container');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const handleH = document.getElementById('resize-handle-h');
+        const captionPanel = document.getElementById('caption-panel');
+        const handleV = document.getElementById('resize-handle-v');
+
+        if (!mainContainer || !leftPanel || !handleH) return;
+
+        let isResizingH = false;
+        let isResizingV = false;
+
+        // Load saved sizes from localStorage
+        const savedLeftWidth = localStorage.getItem('panel-left-width');
+        const savedCaptionHeight = localStorage.getItem('panel-caption-height');
+        
+        if (savedLeftWidth && leftPanel) {
+          leftPanel.style.width = savedLeftWidth;
+        }
+        if (savedCaptionHeight && captionPanel) {
+          captionPanel.style.height = savedCaptionHeight;
+        }
+
+        // Horizontal resize (left/right panels)
+        handleH.addEventListener('mousedown', (e) => {
+          isResizingH = true;
+          handleH.classList.add('active');
+          document.body.classList.add('no-select');
+          document.body.style.cursor = 'col-resize';
+          e.preventDefault();
+        });
+
+        // Vertical resize (caption/form panels)
+        if (handleV && captionPanel) {
+          handleV.addEventListener('mousedown', (e) => {
+            isResizingV = true;
+            handleV.classList.add('active');
+            document.body.classList.add('no-select');
+            document.body.style.cursor = 'row-resize';
+            e.preventDefault();
+          });
+        }
+
+        document.addEventListener('mousemove', (e) => {
+          if (isResizingH) {
+            const containerRect = mainContainer.getBoundingClientRect();
+            const newWidth = e.clientX - containerRect.left;
+            const containerWidth = containerRect.width;
+            const minWidth = 250;
+            const maxWidth = containerWidth - 400; // Leave space for right panel
+            
+            if (newWidth >= minWidth && newWidth <= maxWidth) {
+              leftPanel.style.width = newWidth + 'px';
+            }
+          }
+          
+          if (isResizingV && captionPanel) {
+            const rightPanelRect = rightPanel.getBoundingClientRect();
+            const newHeight = e.clientY - rightPanelRect.top;
+            const minHeight = 120;
+            const maxHeight = rightPanelRect.height * 0.7;
+            
+            if (newHeight >= minHeight && newHeight <= maxHeight) {
+              captionPanel.style.height = newHeight + 'px';
+            }
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (isResizingH) {
+            isResizingH = false;
+            handleH.classList.remove('active');
+            document.body.classList.remove('no-select');
+            document.body.style.cursor = '';
+            // Save to localStorage
+            localStorage.setItem('panel-left-width', leftPanel.style.width);
+          }
+          if (isResizingV) {
+            isResizingV = false;
+            handleV.classList.remove('active');
+            document.body.classList.remove('no-select');
+            document.body.style.cursor = '';
+            // Save to localStorage
+            if (captionPanel) {
+              localStorage.setItem('panel-caption-height', captionPanel.style.height);
+            }
+          }
+        });
+
+        // Double-click to reset to default
+        handleH.addEventListener('dblclick', () => {
+          leftPanel.style.width = '41.67%';
+          localStorage.removeItem('panel-left-width');
+        });
+
+        if (handleV) {
+          handleV.addEventListener('dblclick', () => {
+            captionPanel.style.height = '35%';
+            localStorage.removeItem('panel-caption-height');
+          });
+        }
+      })();
     </script>
   </body>
 </html>
