@@ -144,7 +144,18 @@ if (Astro.request.method === "POST") {
       message = "Error updating row: " + updateError.message;
     } else {
       console.log("Updated successful:", id);
-      return Astro.redirect(`/?search_id=${id}&saved=true`);
+      // Preserve existing URL params when redirecting
+      const currentUrl = new URL(Astro.request.url);
+      const mode = currentUrl.searchParams.get("mode") || "random";
+      const filterIsChecked = currentUrl.searchParams.get("filter_is_checked") || "unchecked";
+      const filterPriority = currentUrl.searchParams.get("filter_priority");
+      
+      let redirectUrl = `/?search_id=${id}&saved=true`;
+      if (mode === "sequential") redirectUrl += `&mode=sequential`;
+      if (filterIsChecked && filterIsChecked !== "unchecked") redirectUrl += `&filter_is_checked=${filterIsChecked}`;
+      if (filterPriority) redirectUrl += `&filter_priority=${filterPriority}`;
+      
+      return Astro.redirect(redirectUrl);
     }
   } catch (e) {
     console.error("Submission error:", e);
@@ -1082,12 +1093,16 @@ if (!finished) {
                     id="save-btn"
                     type="submit"
                     disabled={isSaved}
-                    class={`flex-1 flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white transition-all ${isSaved ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                    class={`flex-1 flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white transition-all ${isSaved ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                   >
-                    {isSaved ? 'Đã lưu!' : 'Lưu (Ctrl+S)'}
+                    <svg id="save-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="save-btn-text">{isSaved ? 'Đã lưu!' : 'Lưu (Ctrl+S)'}</span>
                   </button>
                    <a
-                    href={viewMode === "sequential" && nextId ? `/?search_id=${nextId}&mode=sequential&filter_is_checked=${filterIsChecked}${filterPriority ? `&filter_priority=${filterPriority}` : ''}&saved=true` : "/"}
+                    href={viewMode === "sequential" && nextId ? `/?search_id=${nextId}&mode=sequential&filter_is_checked=${filterIsChecked}${filterPriority ? `&filter_priority=${filterPriority}` : ''}` : "/"}
                     id="continue-btn"
                     class={`flex-1 flex justify-center items-center py-3.5 px-4 border border-indigo-200 bg-white text-indigo-700 rounded-xl shadow-sm text-sm font-bold transition-all ${isSaved ? 'hover:bg-indigo-50' : 'pointer-events-none opacity-50'}`}
                   >
@@ -1111,6 +1126,52 @@ if (!finished) {
       )
     }
     <script is:inline>
+      // Form submit loading state and initialization
+      function initFormHandlers() {
+        const form = document.getElementById('main-form');
+        const saveBtn = document.getElementById('save-btn');
+        const saveBtnText = document.getElementById('save-btn-text');
+        const saveSpinner = document.getElementById('save-spinner');
+        
+        // Check if this page was just saved (from URL param)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isSaved = urlParams.get('saved') === 'true';
+        
+        if (saveBtn && saveBtnText && saveSpinner) {
+          // Reset button to correct state based on URL
+          if (isSaved) {
+            saveBtn.disabled = true;
+            saveBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'bg-indigo-400', 'cursor-wait');
+            saveBtn.classList.add('bg-slate-400', 'cursor-not-allowed');
+            saveBtnText.textContent = 'Đã lưu!';
+            saveSpinner.classList.add('hidden');
+          } else {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('bg-slate-400', 'cursor-not-allowed', 'bg-indigo-400', 'cursor-wait');
+            saveBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            saveBtnText.textContent = 'Lưu (Ctrl+S)';
+            saveSpinner.classList.add('hidden');
+          }
+        }
+        
+        if (form && saveBtn) {
+          form.addEventListener('submit', (e) => {
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            saveBtn.classList.add('bg-indigo-400', 'cursor-wait');
+            if (saveBtnText) saveBtnText.textContent = 'Đang lưu...';
+            if (saveSpinner) saveSpinner.classList.remove('hidden');
+          });
+        }
+      }
+      
+      // Run on initial load
+      initFormHandlers();
+      
+      // Re-run after View Transitions navigation
+      document.addEventListener('astro:page-load', initFormHandlers);
+
       // New Logic for Questionnaire
       function toggleSection(id, show) {
         const el = document.getElementById(id);
@@ -1354,92 +1415,119 @@ if (!finished) {
       // Filter Logic (Keep existing)
 
       // --- Scope Logic (Cookie) ---
-      const scopeBtn = document.getElementById("scope-btn");
-      const scopeModal = document.getElementById("scope-modal");
-      const closeScope = document.getElementById("close-scope");
-      const applyScope = document.getElementById("apply-scope");
-      const selectAll = document.getElementById("select-all");
-      const clearAll = document.getElementById("clear-all");
+      function initScopeLogic() {
+        const scopeBtn = document.getElementById("scope-btn");
+        const scopeModal = document.getElementById("scope-modal");
+        const closeScope = document.getElementById("close-scope");
+        const applyScope = document.getElementById("apply-scope");
+        const selectAll = document.getElementById("select-all");
+        const clearAll = document.getElementById("clear-all");
 
-      if (scopeBtn) {
-        scopeBtn.addEventListener("click", () => scopeModal.classList.remove("hidden"));
-        closeScope.addEventListener("click", () => scopeModal.classList.add("hidden"));
-        
-        // Close on outside click
-        document.addEventListener("click", (e) => {
-            if (!scopeModal.contains(e.target) && !scopeBtn.contains(e.target)) {
-                scopeModal.classList.add("hidden");
-            }
-        });
+        if (scopeBtn && scopeModal) {
+          scopeBtn.addEventListener("click", () => scopeModal.classList.remove("hidden"));
+          if (closeScope) closeScope.addEventListener("click", () => scopeModal.classList.add("hidden"));
 
-        selectAll.addEventListener("click", () => {
-          document.querySelectorAll('input[name="prefix_filter"]').forEach((cb) => (cb.checked = true));
-        });
+          if (selectAll) {
+            selectAll.addEventListener("click", () => {
+              document.querySelectorAll('input[name="prefix_filter"]').forEach((cb) => (cb.checked = true));
+            });
+          }
 
-        clearAll.addEventListener("click", () => {
-          document.querySelectorAll('input[name="prefix_filter"]').forEach((cb) => (cb.checked = false));
-        });
+          if (clearAll) {
+            clearAll.addEventListener("click", () => {
+              document.querySelectorAll('input[name="prefix_filter"]').forEach((cb) => (cb.checked = false));
+            });
+          }
 
-        applyScope.addEventListener("click", () => {
-          const selected = Array.from(
-            document.querySelectorAll('input[name="prefix_filter"]:checked'),
-          ).map((cb) => cb.value);
-          const d = new Date();
-          d.setTime(d.getTime() + 365 * 24 * 60 * 60 * 1000);
-          document.cookie = `dataset_filter=${encodeURIComponent(JSON.stringify(selected))}; expires=${d.toUTCString()}; path=/`;
-          window.location.reload();
-        });
+          if (applyScope) {
+            applyScope.addEventListener("click", () => {
+              const selected = Array.from(
+                document.querySelectorAll('input[name="prefix_filter"]:checked'),
+              ).map((cb) => cb.value);
+              const d = new Date();
+              d.setTime(d.getTime() + 365 * 24 * 60 * 60 * 1000);
+              document.cookie = `dataset_filter=${encodeURIComponent(JSON.stringify(selected))}; expires=${d.toUTCString()}; path=/`;
+              window.location.reload();
+            });
+          }
+        }
       }
 
       // --- Settings Logic (URL Params) ---
-      const settingsBtn = document.getElementById("settings-btn");
-      const settingsModal = document.getElementById("settings-modal");
-      const closeSettings = document.getElementById("close-settings");
-      const applySettings = document.getElementById("apply-settings");
+      function initSettingsLogic() {
+        const settingsBtn = document.getElementById("settings-btn");
+        const settingsModal = document.getElementById("settings-modal");
+        const closeSettings = document.getElementById("close-settings");
+        const applySettings = document.getElementById("apply-settings");
 
-      if(settingsBtn) {
+        if (settingsBtn && settingsModal) {
           settingsBtn.addEventListener("click", () => settingsModal.classList.remove("hidden"));
-          closeSettings.addEventListener("click", () => settingsModal.classList.add("hidden"));
-           
-          document.addEventListener("click", (e) => {
-            if (!settingsModal.contains(e.target) && !settingsBtn.contains(e.target)) {
-                settingsModal.classList.add("hidden");
-            }
-        });
+          if (closeSettings) closeSettings.addEventListener("click", () => settingsModal.classList.add("hidden"));
 
-        applySettings.addEventListener("click", () => {
-            const priority = document.getElementById("filter-priority").value;
-            const isChecked = document.getElementById("filter-is-checked").value;
-            const viewModeSelect = document.getElementById("view-mode");
-            const mode = viewModeSelect ? viewModeSelect.value : "random";
-            const url = new URL(window.location.href);
-            
-            // Update params
-            if(priority) url.searchParams.set("filter_priority", priority);
-            else url.searchParams.delete("filter_priority");
-            
-            if(isChecked && isChecked !== 'all') url.searchParams.set("filter_is_checked", isChecked);
-            else url.searchParams.delete("filter_is_checked");
-            
-            // Set view mode
-            if(mode === "sequential") {
-                url.searchParams.set("mode", "sequential");
-            } else {
-                url.searchParams.delete("mode");
-            }
-            
-            // If switching to sequential mode, clear search_id to start from beginning
-            // If switching to random mode, clear search_id to get a new random item
-            if(url.searchParams.get("mode") !== new URL(window.location.href).searchParams.get("mode")) {
-                url.searchParams.delete("search_id");
-            }
-            
-            window.location.href = url.toString();
+          if (applySettings) {
+            applySettings.addEventListener("click", () => {
+              const priority = document.getElementById("filter-priority").value;
+              const isChecked = document.getElementById("filter-is-checked").value;
+              const viewModeSelect = document.getElementById("view-mode");
+              const mode = viewModeSelect ? viewModeSelect.value : "random";
+              const url = new URL(window.location.href);
+              
+              // Update params
+              if(priority) url.searchParams.set("filter_priority", priority);
+              else url.searchParams.delete("filter_priority");
+              
+              if(isChecked && isChecked !== 'all') url.searchParams.set("filter_is_checked", isChecked);
+              else url.searchParams.delete("filter_is_checked");
+              
+              // Set view mode
+              if(mode === "sequential") {
+                  url.searchParams.set("mode", "sequential");
+              } else {
+                  url.searchParams.delete("mode");
+              }
+              
+              // If switching to sequential mode, clear search_id to start from beginning
+              // If switching to random mode, clear search_id to get a new random item
+              if(url.searchParams.get("mode") !== new URL(window.location.href).searchParams.get("mode")) {
+                  url.searchParams.delete("search_id");
+              }
+              
+              window.location.href = url.toString();
+            });
+          }
+        }
+      }
+
+      // Close modals on outside click (only add once)
+      function initModalCloseHandlers() {
+        document.addEventListener("click", (e) => {
+          const scopeBtn = document.getElementById("scope-btn");
+          const scopeModal = document.getElementById("scope-modal");
+          const settingsBtn = document.getElementById("settings-btn");
+          const settingsModal = document.getElementById("settings-modal");
+          
+          if (scopeModal && scopeBtn && !scopeModal.contains(e.target) && !scopeBtn.contains(e.target)) {
+            scopeModal.classList.add("hidden");
+          }
+          if (settingsModal && settingsBtn && !settingsModal.contains(e.target) && !settingsBtn.contains(e.target)) {
+            settingsModal.classList.add("hidden");
+          }
         });
       }
 
+      // Initialize scope and settings
+      initScopeLogic();
+      initSettingsLogic();
+      initModalCloseHandlers();
+      
+      // Re-run after View Transitions navigation
+      document.addEventListener('astro:page-load', () => {
+        initScopeLogic();
+        initSettingsLogic();
+      });
+
       // --- Resizable Panels Logic ---
-      (function initResizablePanels() {
+      function initResizablePanels() {
         const mainContainer = document.getElementById('main-container');
         const leftPanel = document.getElementById('left-panel');
         const rightPanel = document.getElementById('right-panel');
@@ -1541,7 +1629,13 @@ if (!finished) {
             localStorage.removeItem('panel-caption-height');
           });
         }
-      })();
+      }
+      
+      // Run on initial load
+      initResizablePanels();
+      
+      // Re-run after View Transitions navigation
+      document.addEventListener('astro:page-load', initResizablePanels);
     </script>
   </body>
 </html>
